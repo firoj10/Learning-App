@@ -8,6 +8,7 @@ import Link from "next/link";
 
 import { SessionProvider } from "next-auth/react";
 import type { PropsWithChildren } from "react";
+import { Toaster } from "sonner";
 
 /* ---------------- types ---------------- */
 
@@ -51,6 +52,7 @@ const MainLayout = ({ children }: PropsWithChildren<{}>): JSX.Element => {
       </header>
 
       <main className="flex-1 pt-20 flex flex-col">{children}</main>
+        <Toaster richColors position="top-right" />
 
       {/* <SiteFooter /> */}
     </div>

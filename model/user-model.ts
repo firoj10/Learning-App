@@ -59,6 +59,7 @@ export interface UserDocument extends Document {
   phone: string;
   role: string;
   bio?: string;
+  designation?:string;
   socialMedia?: SocialMedia;
   profilePicture?: string;
 
@@ -104,6 +105,10 @@ const userSchema = new Schema<UserDocument>(
       type: String,
       required: false,
     },
+    designation: {
+        required: false,
+        type: String,
+    }
   },
   {
     timestamps: true,
@@ -112,3 +117,6 @@ const userSchema = new Schema<UserDocument>(
 
 export const User =
   models.User || model<UserDocument>("User", userSchema);
+
+
+  

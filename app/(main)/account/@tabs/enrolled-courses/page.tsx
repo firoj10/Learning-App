@@ -33,18 +33,18 @@ function EnrolledCourses() {
 							<p className="text-md md:text-sm font-medium text-slate-700">
 								Total Modules: 10
 							</p>
-							<p className="text-md md:text-sm font-medium text-slate-700">
+							{/* <p className="text-md md:text-sm font-medium text-slate-700">
 								Completed Modules <Badge variant="success">05</Badge>
-							</p>
+							</p> */}
 						</div>
 						<div className="flex items-center justify-between mt-2">
 							<p className="text-md md:text-sm font-medium text-slate-700">
 								Total Quizzes: 10
 							</p>
 
-							<p className="text-md md:text-sm font-medium text-slate-700">
+							{/* <p className="text-md md:text-sm font-medium text-slate-700">
 								Quiz taken <Badge variant="success">10</Badge>
-							</p>
+							</p> */}
 						</div>
 						<div className="flex items-center justify-between mt-2">
 							<p className="text-md md:text-sm font-medium text-slate-700">
