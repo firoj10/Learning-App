@@ -89,13 +89,9 @@ import { Category } from "@/model/category-model";
 import { User } from "@/model/user-model";
 import { Testimonial } from "@/model/testimonial-model";
 import { Module } from "@/model/module.model";
-import { dbConnect } from "@/service/mongo";
-import mongoose from "mongoose";
 
-import {
-  replaceMongoIdInArray,
-  replaceMongoIdInObject,
-} from "@/lib/convertData";
+import { replaceMongoIdInArray, replaceMongoIdInObject } from "@/lib/convertData";
+import { dbConnect } from "@/service/mongo";
 
 import { getEnrollmentsForCourse } from "./enrollments";
 import { getTestimonialsForCourse } from "./testimonials";
@@ -211,54 +207,96 @@ export async function getCourseDetails(id: string): Promise<any> {
 //   };
 // }
 
-export async function getCourseDetailsByInstructor(
-  instructorId: string
-): Promise<{
-  courses: number;
-  enrollments: number;
-  reviews: number;
-  ratings: string;
-}> {
-  const courses = await Course.find({
-    instructor: instructorId,
-  }).lean();
+// export async function getCourseDetailsByInstructor(
+//   instructorId: string
+// ): Promise<{
+//   courses: number;
+//   enrollments: number;
+//   reviews: number;
+//   ratings: string;
+// }> {
+//   const courses = await Course.find({
+//     instructor: instructorId,
+//   }).lean();
 
-  const enrollments = await Promise.all(
-    courses.map(async (course: any) => {
-      const enrollment = await getEnrollmentsForCourse(
-        course._id.toString()
+//   const enrollments = await Promise.all(
+//     courses.map(async (course: any) => {
+//       const enrollment = await getEnrollmentsForCourse(
+//         course._id.toString()
+//       );
+//       return enrollment.length; // ✅ convert to number
+//     })
+//   );
+
+//   const totalEnrollments = enrollments.reduce(
+//     (sum: number, current: number) => sum + current,
+//     0
+//   );
+
+//   const testimonials = await Promise.all(
+//     courses.map(async (course: any) => {
+//       const testimonial = await getTestimonialsForCourse(
+//         course._id.toString()
+//       );
+//       return testimonial.map((t: any) => ({
+//         rating: Number(t.rating), // ✅ keep only primitive
+//       }));
+//     })
+//   );
+
+//   const totalTestimonials = testimonials.flat();
+
+//   const avgRating =
+//     totalTestimonials.reduce((acc: number, obj: any) => {
+//       return acc + obj.rating;
+//     }, 0) / (totalTestimonials.length || 1);
+
+//   return {
+//     courses: Number(courses.length),
+//     enrollments: Number(totalEnrollments),
+//     reviews: Number(totalTestimonials.length),
+//     ratings: avgRating.toPrecision(2),
+//   };
+// }
+export async function getCourseDetailsByInstructor(instructorId) {
+    const courses = await Course.find({instructor: instructorId}).lean();
+
+    const enrollments = await Promise.all(
+        courses.map(async (course) => {
+          const enrollment = await getEnrollmentsForCourse(course._id.toString());
+          return enrollment;
+        })
+    );
+
+    const groupedByCourses = Object.groupBy(enrollments.flat(), ({ course }) => course);
+
+    const totalRevenue = courses.reduce((acc, course) => {
+        return (acc + groupedByCourses[course._id].length * course.price)
+    }, 0);
+
+    const totalEnrollments = enrollments.reduce(function (acc, obj) {
+        return acc + obj.length;
+    }, 0)
+
+    const testimonials = await Promise.all(
+        courses.map(async (course) => {
+          const testimonial = await getTestimonialsForCourse(course._id.toString());
+          return testimonial;
+        })
       );
-      return enrollment.length; // ✅ convert to number
-    })
-  );
 
-  const totalEnrollments = enrollments.reduce(
-    (sum: number, current: number) => sum + current,
-    0
-  );
+      const totalTestimonials = testimonials.flat();
+      const avgRating = (totalTestimonials.reduce(function (acc, obj) {
+            return acc + obj.rating;
+        }, 0)) / totalTestimonials.length;
 
-  const testimonials = await Promise.all(
-    courses.map(async (course: any) => {
-      const testimonial = await getTestimonialsForCourse(
-        course._id.toString()
-      );
-      return testimonial.map((t: any) => ({
-        rating: Number(t.rating), // ✅ keep only primitive
-      }));
-    })
-  );
+    //console.log("testimonials", totalTestimonials, avgRating);
 
-  const totalTestimonials = testimonials.flat();
-
-  const avgRating =
-    totalTestimonials.reduce((acc: number, obj: any) => {
-      return acc + obj.rating;
-    }, 0) / (totalTestimonials.length || 1);
-
-  return {
-    courses: Number(courses.length),
-    enrollments: Number(totalEnrollments),
-    reviews: Number(totalTestimonials.length),
-    ratings: avgRating.toPrecision(2),
-  };
+    return {
+        "courses": courses.length,
+        "enrollments": totalEnrollments,
+        "reviews": totalTestimonials.length,
+        "ratings": avgRating.toPrecision(2),
+        "revenue": totalRevenue
+    }
 }

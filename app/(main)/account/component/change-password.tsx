@@ -27,7 +27,6 @@ const ChangePassword = ({ email }) => {
     event.preventDefault();
     console.log(passwordState);
 
-    // (Optional) confirm password check (logic change হবে) তাই দিচ্ছি না
 
     try {
       await changePassword(

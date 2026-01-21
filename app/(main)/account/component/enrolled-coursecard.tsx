@@ -19,30 +19,28 @@ const EnrolledCourseCard = async ({enrollment}) => {
     // Total Completed Modules
     const totalCompletedModules = report?.totalCompletedModeules?.length;
 
-    // Get all Quizzes and Assignments
-    const quizzes = report?.quizAssessment?.assessments;
-    const totalQuizzes = quizzes?.length;
+  // Get all Quizzes and Assignments
+const quizzes = report?.quizAssessment?.assessments ?? [];
+const totalQuizzes = quizzes.length;
 
-    // Find attempted quizzes
-    const quizzesTaken = quizzes.filter(q => q.attempted);
-    console.log(quizzesTaken);
+// Find attempted quizzes
+const quizzesTaken = quizzes.filter((q) => q?.attempted);
+console.log(quizzesTaken);
 
-    // Find how many quizzes answered correct
+// Find how many quizzes answered correct
+const totalCorrect = quizzesTaken
+  .map((quiz) => {
+    const item = quiz?.options ?? [];
+    return item.filter((o) => o.isCorrect === true && o.isSelected === true);
+  })
+  .filter((elem) => elem.length > 0)
+  .flat();
 
-    const totalCorrect = quizzesTaken.map(quiz => {
-        const item = quiz.options
-        return item.filter(o => {
-            return o.isCorrect === true && o.isSelected === true
-        })
-      }).filter(elem => elem.length > 0).flat();
+const marksFromQuizzes = totalCorrect.length * 5;
 
-    //console.log({totalCorrect});
+const otherMarks = report?.quizAssessment?.otherMarks ?? 0;
+const totalMarks = marksFromQuizzes + otherMarks;
 
-    const marksFromQuizzes = totalCorrect?.length * 5;
-
-    const otherMarks = report?.quizAssessment?.otherMarks;
-
-    const totalMarks = (marksFromQuizzes + otherMarks);
 
 
     return (
@@ -75,7 +73,7 @@ const EnrolledCourseCard = async ({enrollment}) => {
                         </p>
                         <p className="text-md md:text-sm font-medium text-slate-700">
                             Completed Modules{" "}
-                            <Badge variant="success">{totalCompletedModules}</Badge>
+                            {/* <Badge variant="success">{totalCompletedModules}</Badge> */}
                         </p>
                     </div>
                     <div className="flex items-center justify-between mt-2">
@@ -84,7 +82,7 @@ const EnrolledCourseCard = async ({enrollment}) => {
                         </p>
 
                         <p className="text-md md:text-sm font-medium text-slate-700">
-                            Quiz taken <Badge variant="success">{quizzesTaken?.length}</Badge>
+                            {/* Quiz taken <Badge variant="success">{quizzesTaken?.length}</Badge> */}
                         </p>
                     </div>
                     <div className="flex items-center justify-between mt-2">
