@@ -130,11 +130,30 @@ export async function getCourseList(): Promise<any[]> {
 }
 
 
-export async function getCourseDetails(id: string): Promise<any> {
-  await dbConnect();
+// export async function getCourseDetails(id: string): Promise<any> {
 
-  // Guard: invalid id
-  if (!mongoose.Types.ObjectId.isValid(id)) {
+
+//   const course = await Course.findById(id)
+//     .populate({ path: "category", model: Category })
+//     .populate({ path: "instructor", model: User })
+//     .populate({
+//       path: "testimonials",
+//       model: Testimonial,
+//       populate: { path: "user", model: User },
+//     })
+//     .populate({ path: "modules", model: Module })
+//     .lean();
+
+//   // Guard: not found
+//   if (!course) return null; // or throw new Error("Course not found");
+
+//   return replaceMongoIdInObject(course);
+// }
+import mongoose from "mongoose";
+
+export async function getCourseDetails(id: string): Promise<any> {
+  // ✅ guard invalid id
+  if (!id || id === "undefined" || !mongoose.Types.ObjectId.isValid(id)) {
     return null; // or throw new Error("Invalid course id");
   }
 
@@ -149,116 +168,13 @@ export async function getCourseDetails(id: string): Promise<any> {
     .populate({ path: "modules", model: Module })
     .lean();
 
-  // Guard: not found
-  if (!course) return null; // or throw new Error("Course not found");
+  if (!course) return null;
 
   return replaceMongoIdInObject(course);
 }
 
 
-// export async function getCourseDetailsByInstructor(
-//   instructorId: string
-// ): Promise<{
-//   courses: number;
-//   enrollments: number;
-//   reviews: number;
-//   ratings: string;
-// }> {
-//   const courses = await Course.find({
-//     instructor: instructorId,
-//   }).lean();
-
-//   const enrollments = await Promise.all(
-//     courses.map(async (course: any) => {
-//       const enrollment = await getEnrollmentsForCourse(
-//         course._id.toString()
-//       );
-//       return enrollment;
-//     })
-//   );
-
-//   const totalEnrollments = enrollments.reduce(
-//     (item: any, currentValue: any) => {
-//       return item.length + currentValue.length;
-//     }
-//   );
-
-//   const testimonials = await Promise.all(
-//     courses.map(async (course: any) => {
-//       const testimonial = await getTestimonialsForCourse(
-//         course._id.toString()
-//       );
-//       return testimonial;
-//     })
-//   );
-
-//   const totalTestimonials = testimonials.flat();
-
-//   const avgRating =
-//     totalTestimonials.reduce((acc: number, obj: any) => {
-//       return acc + obj.rating;
-//     }, 0) / totalTestimonials.length;
-
-//   return {
-//     courses: courses.length,
-//     enrollments: totalEnrollments,
-//     reviews: totalTestimonials.length,
-//     ratings: avgRating.toPrecision(2),
-//   };
-// }
-
-// export async function getCourseDetailsByInstructor(
-//   instructorId: string
-// ): Promise<{
-//   courses: number;
-//   enrollments: number;
-//   reviews: number;
-//   ratings: string;
-// }> {
-//   const courses = await Course.find({
-//     instructor: instructorId,
-//   }).lean();
-
-//   const enrollments = await Promise.all(
-//     courses.map(async (course: any) => {
-//       const enrollment = await getEnrollmentsForCourse(
-//         course._id.toString()
-//       );
-//       return enrollment.length; // ✅ convert to number
-//     })
-//   );
-
-//   const totalEnrollments = enrollments.reduce(
-//     (sum: number, current: number) => sum + current,
-//     0
-//   );
-
-//   const testimonials = await Promise.all(
-//     courses.map(async (course: any) => {
-//       const testimonial = await getTestimonialsForCourse(
-//         course._id.toString()
-//       );
-//       return testimonial.map((t: any) => ({
-//         rating: Number(t.rating), // ✅ keep only primitive
-//       }));
-//     })
-//   );
-
-//   const totalTestimonials = testimonials.flat();
-
-//   const avgRating =
-//     totalTestimonials.reduce((acc: number, obj: any) => {
-//       return acc + obj.rating;
-//     }, 0) / (totalTestimonials.length || 1);
-
-//   return {
-//     courses: Number(courses.length),
-//     enrollments: Number(totalEnrollments),
-//     reviews: Number(totalTestimonials.length),
-//     ratings: avgRating.toPrecision(2),
-//   };
-// }
-export async function getCourseDetailsByInstructor(instructorId) {
+export async function getCourseDetailsByInstructor(instructorId, expand) {
     const courses = await Course.find({instructor: instructorId}).lean();
 
     const enrollments = await Promise.all(
@@ -291,7 +207,13 @@ export async function getCourseDetailsByInstructor(instructorId) {
         }, 0)) / totalTestimonials.length;
 
     //console.log("testimonials", totalTestimonials, avgRating);
-
+    if (expand) {
+        return {
+            "courses": courses?.flat(),
+            "enrollments": enrollments?.flat(),
+            "reviews": totalTestimonials,
+        }
+    }
     return {
         "courses": courses.length,
         "enrollments": totalEnrollments,
