@@ -1,139 +1,169 @@
-// import mongoose, { Schema } from "mongoose";
 
-// const courseSchema = new Schema({
+// import mongoose, {
+//   Schema,
+//   model,
+//   models,
+//   Types,
+//   Document,
+// } from "mongoose";
+
+// export interface CourseDocument extends Document {
+//   title: string;
+//   description: string;
+//   thumbnail: string;
+
+//   modules: Types.ObjectId[];
+
+//   price: number;
+//   active: boolean;
+
+//   category: Types.ObjectId;
+//   instructor: Types.ObjectId;
+
+//   quizzes?: Types.ObjectId;
+
+//   testimonials: Types.ObjectId[];
+
+//   createdAt?: Date;
+//   updatedAt?: Date;
+// }
+
+// const courseSchema = new Schema<CourseDocument>(
+//   {
 //     title: {
-//         required: true,
-//         type: String,
+//       type: String,
+//       required: true,
 //     },
 //     description: {
-//         required: true,
-//         type: String,
+//       type: String,
+//       required: true,
 //     },
 //     thumbnail: {
-//         required: true,
-//         type: String,
+//       type: String,
+//       required: true,
 //     },
+
 //     modules: [
-//         { type: Schema.ObjectId, ref: "Module" }
+//       {
+//         type: Schema.Types.ObjectId,
+//         ref: "Module",
+//       },
 //     ],
+
 //     price: {
-//         required: true,
-//         type: Number,
+//       type: Number,
+//       required: true,
 //     },
 //     active: {
-//         required: true,
-//         type: Boolean,
+//       type: Boolean,
+//       required: true,
 //     },
 
 //     category: {
-//         type: Schema.ObjectId, ref: "Category"
+//       type: Schema.Types.ObjectId,
+//       ref: "Category",
+//       required: true,
 //     },
 
 //     instructor: {
-//         type: Schema.ObjectId, ref: "User"
+//       type: Schema.Types.ObjectId,
+//       ref: "User",
+//       required: true,
 //     },
 
 //     quizzes: {
-//         required: false,
-//         type: Schema.ObjectId,
+//       type: Schema.Types.ObjectId,
+//       required: false,
 //     },
 
-//     testimonials: [{
-//         type: Schema.ObjectId, ref: "Testimonial"
-//     }],
-// });
+//     testimonials: [
+//       {
+//         type: Schema.Types.ObjectId,
+//         ref: "Testimonial",
+//       },
+//     ],
+//   },
+//   {
+//     timestamps: true,
+//   }
+// );
 
 // export const Course =
-//     mongoose.models.Course ?? mongoose.model("Course", courseSchema);
+//   models.Course || model<CourseDocument>("Course", courseSchema);
 
-import mongoose, {
-  Schema,
-  model,
-  models,
-  Types,
-  Document,
-} from "mongoose";
 
-export interface CourseDocument extends Document {
+import mongoose, { Schema, model, models, Types } from "mongoose";
+
+export interface CourseDocument extends mongoose.Document {
   title: string;
+  subtitle?: string;
   description: string;
-  thumbnail: string;
+  thumbnail?: string;
 
   modules: Types.ObjectId[];
 
   price: number;
   active: boolean;
 
-  category: Types.ObjectId;
-  instructor: Types.ObjectId;
+  category?: Types.ObjectId;
+  instructor?: Types.ObjectId;
 
+  quizSet?: Types.ObjectId;
   quizzes?: Types.ObjectId;
 
   testimonials: Types.ObjectId[];
+  learning?: string[];
 
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
+
+
+// thumbnail: { type: String, default: "" },          // ✅ not required
+// category: { type: Schema.Types.ObjectId, ref: "Category", required: false }, // ✅ optional
+// price: { type: Number, default: 0, required: false }, // ✅ default
+// active: { type: Boolean, default: false, required: false }, // ✅ default
+
+
+
+
+
+
 
 const courseSchema = new Schema<CourseDocument>(
   {
-    title: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-      required: true,
-    },
-    thumbnail: {
-      type: String,
-      required: true,
-    },
+    title: { type: String, required: true, trim: true },
+    subtitle: { type: String, trim: true },
 
-    modules: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Module",
-      },
-    ],
+    description: { type: String, required: true },
+    // thumbnail: { type: String },
+    thumbnail: { type: String, default: "" },          // ✅ not required
 
-    price: {
-      type: Number,
-      required: true,
-    },
-    active: {
-      type: Boolean,
-      required: true,
-    },
 
-    category: {
-      type: Schema.Types.ObjectId,
-      ref: "Category",
-      required: true,
-    },
+    modules: [{ type: Schema.Types.ObjectId, ref: "Module" }],
 
-    instructor: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+    // price: { type: Number, required: true, default: 0, min: 0 },
+    // active: { type: Boolean, required: true, default: false },
+    price: { type: Number, default: 0, required: false }, // ✅ default
 
-    quizzes: {
-      type: Schema.Types.ObjectId,
-      required: false,
-    },
+    active: { type: Boolean, default: false, required: false }, // ✅ default
 
-    testimonials: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Testimonial",
-      },
-    ],
+
+    // category: { type: Schema.Types.ObjectId, ref: "Category" },
+    category: { type: Schema.Types.ObjectId, ref: "Category", required: false }, // ✅ optional
+
+    instructor: { type: Schema.Types.ObjectId, ref: "User" },
+
+    quizSet: { type: Schema.Types.ObjectId, ref: "Quizset" },
+    quizzes: { type: Schema.Types.ObjectId },
+
+    testimonials: [{ type: Schema.Types.ObjectId, ref: "Testimonial" }],
+
+    learning: { type: [String], default: [] },
   },
   {
-    timestamps: true,
+    timestamps: true, // ✅ adds createdAt + updatedAt automatically
   }
 );
 
-export const Course =
-  models.Course || model<CourseDocument>("Course", courseSchema);
+export const Course = models.Course || model<CourseDocument>("Course", courseSchema);

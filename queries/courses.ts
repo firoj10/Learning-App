@@ -186,9 +186,14 @@ export async function getCourseDetailsByInstructor(instructorId, expand) {
 
     const groupedByCourses = Object.groupBy(enrollments.flat(), ({ course }) => course);
 
-    const totalRevenue = courses.reduce((acc, course) => {
-        return (acc + groupedByCourses[course._id].length * course.price)
-    }, 0);
+    // const totalRevenue = courses.reduce((acc, course) => {
+    //     return (acc + groupedByCourses[course._id].length * course.price)
+    // }, 0);
+const totalRevenue = courses.reduce((acc, course) => {
+  const key = course._id.toString();                 // ✅ ensure string key
+  const count = (groupedByCourses?.[key] ?? []).length; // ✅ fallback
+  return acc + count * course.price;
+}, 0);
 
     const totalEnrollments = enrollments.reduce(function (acc, obj) {
         return acc + obj.length;
@@ -220,5 +225,15 @@ export async function getCourseDetailsByInstructor(instructorId, expand) {
         "reviews": totalTestimonials.length,
         "ratings": avgRating.toPrecision(2),
         "revenue": totalRevenue
+    }
+}
+
+
+export async function create(courseData) {
+    try{
+        const course =  await Course.create(courseData);
+        return JSON.parse(JSON.stringify(course));
+    } catch(err) {
+        throw new Error(err);
     }
 }

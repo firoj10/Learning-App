@@ -35,45 +35,45 @@ export interface ModuleDocument extends Document {
   description: string;
   status: string;
   slug: string;
-  course: string; // could also be Types.ObjectId if referencing Course
-  lessonIds: string[];
+  course: Types.ObjectId;
+  lessonIds: Types.ObjectId[];
   duration: number;
-
+  order: number;
+active:boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 const moduleSchema = new Schema<ModuleDocument>(
   {
-    title: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-      required: true,
-    },
-    status: {
-      type: String,
-      required: true,
-    },
-    duration: {
-    required: false,
-    type: Number,
-    default: 0, // default duration
+   title: {
+    required: true,
+    type: String,
   },
-    slug: {
-      type: String,
-      required: true,
-    },
-    course: {
-      type: String,
-      required: true,
-    },
-    lessonIds: {
-      type: [String],
-      required: true,
-    },
+  description: {
+    type: String,
+  },
+  active: {
+    required: true,
+    default: false,
+    type: Boolean,
+  },
+  slug: {
+    required: true,
+    type: String,
+  },
+  course: {
+    required: true,
+    type: Schema.ObjectId,
+  },
+  lessonIds: {
+    required: true,
+    type: [Schema.ObjectId],
+  },
+  order: {
+    required: true,
+    type: Number,
+  },
   },
   {
     timestamps: true,

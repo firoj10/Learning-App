@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "app/(main)/courses/[id]/page.tsx"  ],
+, "app/(main)/courses/[id]/page.tsx", "components/file-upload.tsx"  ],
   "exclude": ["node_modules"]
 }
