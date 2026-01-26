@@ -16,12 +16,13 @@ import { LessonTitleForm } from "./lesson-title-form";
 import { LessonDescriptionForm } from "./lesson-description-form";
 import { LessonAccessForm } from "./lesson-access-form";
 import { VideoUrlForm } from "./video-url-form";
-import { CourseActions } from "../../../_components/course-action";
-export const LessonModal = ({ open, setOpen, courseId, lesson }) => {
-    console.log(lesson?.id,'------------lesson?.id_____')
-const lessonId = lesson?._id?.toString?.() || lesson?.id;
+import { LessonActions } from "./lesson-action";
 
-console.log(lessonId,"-------gg----------")
+export const LessonModal = ({ open, setOpen, courseId, moduleId, lesson, onclose }) => {
+  function postDelete() {
+    setOpen(false);
+    onclose();
+  }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       {/* <DialogTrigger>Open</DialogTrigger> */}
@@ -42,7 +43,7 @@ console.log(lessonId,"-------gg----------")
                 Back to course setup
               </Link>
               <div className="flex items-center justify-end">
-                <CourseActions />
+                <LessonActions lesson={lesson} moduleId={moduleId} onDelete={postDelete}/>
               </div>
             </div>
           </div>
@@ -53,8 +54,11 @@ console.log(lessonId,"-------gg----------")
                   <IconBadge icon={LayoutDashboard} />
                   <h2 className="text-xl">Customize Your chapter</h2>
                 </div>
-              <LessonTitleForm initialData={{ title: lesson?.title }} courseId={courseId} lessonId={lessonId} />
-
+                <LessonTitleForm
+                  initialData={{title: lesson?.title}}
+                  courseId={courseId}
+                  lessonId={lesson?.id}
+                />
                 <LessonDescriptionForm
                   initialData={{description: lesson?.description}}
                   courseId={courseId}
