@@ -126,7 +126,7 @@ const modulesPlain = toPlain(modules);
                 <h2 className="text-xl">Sell you course</h2>
               </div>
 
-              <PriceForm initialData={{ price: course?.price }} courseId={courseId} />
+              <PriceForm initialData={{price: course?.price}} courseId={courseId} />
             </div>
           </div>
         </div>

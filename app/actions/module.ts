@@ -110,3 +110,11 @@ export async function reOrderModules(data: ReorderElement[]) {
     throw new Error((e as Error)?.message ?? String(e));
   }
 }
+
+export async function updateModule(moduleId, data) {
+    try {
+        await Module.findByIdAndUpdate(moduleId, data)
+    } catch (err) {
+        throw new Error(err);
+    }
+}
