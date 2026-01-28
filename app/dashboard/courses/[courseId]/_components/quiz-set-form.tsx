@@ -16,47 +16,56 @@ import {
 import { cn } from "@/lib/utils";
 import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { updateQuizSetForCourse } from "@/app/actions/course";
 
 const formSchema = z.object({
   quizSetId: z.string().min(1),
 });
 
-export const QuizSetForm = ({
-  initialData,
-  courseId,
-  options = [
-    {
-      value: "quiz_set_1",
-      label: "Quiz Set 1",
-    },
-    {
-      value: "2",
-      label: "Quiz Set 2",
-    },
-  ],
-}) => {
+type FormValues = z.infer<typeof formSchema>;
+
+type OptionItem = {
+  value: string;
+  label: string;
+};
+
+type QuizSetFormProps = {
+  initialData: { quizSetId?: string };
+  courseId: string;
+  options: OptionItem[];
+};
+
+export const QuizSetForm = ({ initialData, courseId, options }: QuizSetFormProps) => {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
 
+  const foundMatch = useMemo(
+    () => options.find((o) => o.value === (initialData?.quizSetId ?? "")),
+    [options, initialData?.quizSetId]
+  );
+
   const toggleEdit = () => setIsEditing((current) => !current);
 
-  const form = useForm({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       quizSetId: initialData?.quizSetId || "",
     },
+    mode: "onChange",
   });
 
   const { isSubmitting, isValid } = form.formState;
 
-  const onSubmit = async (values) => {
+  const onSubmit = async (values: FormValues) => {
     try {
+      console.log(values);
+      await updateQuizSetForCourse(courseId, values);
       toast.success("Course updated");
       toggleEdit();
       router.refresh();
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong");
     }
   };
@@ -65,7 +74,7 @@ export const QuizSetForm = ({
     <div className="mt-6 border bg-gray-50 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
         Quiz Set
-        <Button variant="ghost" onClick={toggleEdit}>
+        <Button type="button" variant="ghost" onClick={toggleEdit}>
           {isEditing ? (
             <>Cancel</>
           ) : (
@@ -76,35 +85,39 @@ export const QuizSetForm = ({
           )}
         </Button>
       </div>
+
       {!isEditing && (
         <p
           className={cn(
             "text-sm mt-2",
-            !initialData.quizSetId && "text-slate-500 italic"
+            !initialData?.quizSetId && "text-slate-500 italic"
           )}
         >
-          {"No quiz set selected"}
+          {foundMatch ? (
+            <span>{foundMatch.label}</span>
+          ) : (
+            <span>"No quiz set selected"</span>
+          )}
         </p>
       )}
-      {console.log({ options })}
+
       {isEditing && (
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 mt-4"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
             <FormField
               control={form.control}
               name="quizSetId"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
+                    {/* Combobox props typing may vary in your project; this keeps logic same */}
                     <Combobox options={options} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <div className="flex items-center gap-x-2">
               <Button disabled={!isValid || isSubmitting} type="submit">
                 Save

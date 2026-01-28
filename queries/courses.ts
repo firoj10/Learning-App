@@ -92,6 +92,7 @@ import { Module } from "@/model/module.model";
 
 import { replaceMongoIdInArray, replaceMongoIdInObject } from "@/lib/convertData";
 import { dbConnect } from "@/service/mongo";
+import { Lesson } from "@/model/lesson.model";
 
 import { getEnrollmentsForCourse } from "./enrollments";
 import { getTestimonialsForCourse } from "./testimonials";
@@ -165,8 +166,14 @@ export async function getCourseDetails(id: string): Promise<any> {
       model: Testimonial,
       populate: { path: "user", model: User },
     })
-    .populate({ path: "modules", model: Module })
-    .lean();
+   .populate({
+        path: "modules",
+        model: Module,
+        populate: {
+            path: "lessonIds",
+            model: Lesson
+        }
+    }).lean();
 
   if (!course) return null;
 

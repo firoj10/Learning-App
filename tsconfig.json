@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "app/(main)/courses/[id]/page.tsx", "components/file-upload.tsx"  ],
+, "app/(main)/courses/[id]/page.tsx", "components/file-upload.tsx", "app/dashboard/quiz-sets/[quizSetId]/page.jsx", "app/(main)/courses/[id]/lesson/page.tsx"  ],
   "exclude": ["node_modules"]
 }

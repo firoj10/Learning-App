@@ -1,7 +1,7 @@
 // app/(main)/courses/[id]/page.tsx
 import CourseDetailsIntro from "./_components/CourseDetailsIntro";
 import Testimonials from "./_components/Testimonials";
-import RelatedCourses from "./_components/RelatedCourses";
+// import RelatedCourses from "./_components/RelatedCourses";
 import CourseDetails from "./_components/CourseDetails";
 
 import { getCourseDetails } from "@/queries/courses";
@@ -21,11 +21,8 @@ const SingleCoursePage = async (props: SingleCoursePageProps) => {
 
   return (
     <>
-      <CourseDetailsIntro
-        title={course?.title}
-        subtitle={course?.subtitle}
-        thumbnail={course?.thumbnail}
-      />
+    <CourseDetailsIntro course={course} />
+
 
       <CourseDetails course={course} />
 
@@ -33,7 +30,7 @@ const SingleCoursePage = async (props: SingleCoursePageProps) => {
         <Testimonials testimonials={replaceMongoIdInArray(course.testimonials)} />
       )}
 
-      <RelatedCourses />
+      {/* <RelatedCourses /> */}
     </>
   );
 };
