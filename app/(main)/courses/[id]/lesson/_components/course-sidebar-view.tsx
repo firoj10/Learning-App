@@ -5,18 +5,40 @@ import { GiveReview } from "./give-review";
 import { DownloadCertificate } from "./download-certificate";
 import { SidebarModules } from "./sidebar-modules";
 
-type CourseSidebarViewProps = {
-  courseId: string;
-  modules: any[];
+type PlainLesson = {
+  _id: string;
+  title?: string;
+  slug?: string;
+  access?: unknown;
+  order?: number;
+  active?: boolean;
+  state?: string;
+  video_url?: string;
 };
 
-export const CourseSidebarView = ({ courseId, modules }: CourseSidebarViewProps) => {
+type PlainModule = {
+  _id: string;
+  title?: string;
+  active?: boolean;
+  slug?: string;
+  course?: string;
+  order?: number;
+  lessonIds: PlainLesson[];
+};
+
+type CourseSidebarViewProps = {
+  courseId: string;
+  modules: PlainModule[];
+  totalProgress: number;
+};
+
+export const CourseSidebarView = ({ courseId, modules, totalProgress }: CourseSidebarViewProps) => {
   return (
-    <div className="h-full border-r flex flex-col overflow-y-auto shadow-sm">
+    <div className="hidden lg:flex h-full w-96 flex-col inset-y-0 z-50">
       <div className="p-8 flex flex-col border-b">
         <h1 className="font-semibold">Reactive Accelerator</h1>
         <div className="mt-10">
-          <CourseProgress variant="success" value={80} />
+          <CourseProgress variant="success" value={totalProgress} />
         </div>
       </div>
 
