@@ -8,9 +8,9 @@ import { Button, buttonVariants } from "@/components/ui/button";
 
 import { EnrollCourse } from "@/components/enroll-course";
 
-const CourseCard = ({course}) => {
-  return (
-     <div className="group hover:shadow-sm transition overflow-hidden border rounded-lg p-3 h-full">
+const CourseCard = ({ course }) => {
+    return (
+        <div className="group hover:shadow-sm transition overflow-hidden border rounded-lg p-3 h-full">
             <Link key={course.id} href={`/courses/${course.id}`}>
                 <div>
                     <div className="relative w-full aspect-video rounded-md overflow-hidden">
@@ -44,15 +44,15 @@ const CourseCard = ({course}) => {
                     {formatPrice(course?.price)}
                 </p>
                 <EnrollCourse
-  asLink={true}
-  courseId={course?._id?.toString?.() ?? course?.id ?? ""}
-  courseName={course?.title ?? ""}
-  coursePrice={Number(course?.price ?? 0)}
-/>
+                    asLink={true}
+                    courseId={course?._id?.toString?.() ?? course?.id ?? ""}
+                    courseName={course?.title ?? ""}
+                    coursePrice={Number(course?.price ?? 0)}
+                />
 
             </div>
         </div>
-  )
+    )
 }
 
 export default CourseCard

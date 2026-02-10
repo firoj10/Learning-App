@@ -11,10 +11,118 @@ import { Lesson } from "@/model/lesson.model";
 
 import { getEnrollmentsForCourse } from "./enrollments";
 import { getTestimonialsForCourse } from "./testimonials";
+import mongoose from "mongoose";
 
-export async function getCourseList(): Promise<any[]> {
-     await dbConnect(); 
-  const courses = await Course.find({})
+// export async function getCourseList(): Promise<any[]> {
+//      await dbConnect(); 
+//   const courses = await Course.find({})
+//     .select([
+//       "title",
+//       "subtitle",
+//       "thumbnail",
+//       "modules",
+//       "price",
+//       "category",
+//       "instructor",
+//     ])
+//     .populate({
+//       path: "category",
+//       model: Category,
+//     })
+//     .populate({
+//       path: "instructor",
+//       model: User,
+//     })
+//     .populate({
+//       path: "testimonials",
+//       model: Testimonial,
+//     })
+//     .populate({
+//       path: "modules",
+//       model: Module,
+//     })
+//     .lean();
+
+//   return replaceMongoIdInArray(courses);
+// }
+type CourseListFilter = {
+  categories?: string[]; // e.g. ["development","design"] OR ["65f..."]
+  price?: string[];      // ["free"] | ["paid"] | ["free","paid"]
+  sort?: string;         // "price-asc" | "price-desc" | ""
+  search?: string;       // text
+};
+
+function isObjectId(v: string) {
+  return mongoose.Types.ObjectId.isValid(v);
+}
+
+export async function getCourseList(filter: CourseListFilter = {}): Promise<any[]> {
+  await dbConnect();
+
+  const categories = filter.categories ?? [];
+  const price = filter.price ?? [];
+  const sort = filter.sort ?? "";
+  const search = (filter.search ?? "").trim();
+
+  const query: any = {};
+
+  // ✅ Search filter (title/subtitle)
+  if (search) {
+    query.$or = [
+      { title: { $regex: search, $options: "i" } },
+      { subtitle: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  // ✅ Price filter (free/paid)
+  // free => price == 0
+  // paid => price > 0
+  if (price.length > 0) {
+    const wantsFree = price.includes("free");
+    const wantsPaid = price.includes("paid");
+
+    if (wantsFree && !wantsPaid) {
+      query.price = 0;
+    } else if (!wantsFree && wantsPaid) {
+      query.price = { $gt: 0 };
+    }
+    // if both selected -> no price filter
+  }
+
+  // ✅ Category filter
+  // UI sends slug like "development" OR could send ObjectId string
+  if (categories.length > 0) {
+    const objectIds = categories
+      .filter((c) => isObjectId(c))
+      .map((c) => new mongoose.Types.ObjectId(c));
+
+    const slugs = categories.filter((c) => !isObjectId(c));
+
+    let categoryIds: mongoose.Types.ObjectId[] = [...objectIds];
+
+    if (slugs.length > 0) {
+      // find categories by slug (or value) and map to _id
+      const cats = await Category.find({
+        $or: [{ slug: { $in: slugs } }, { title: { $in: slugs } }],
+      })
+        .select(["_id"])
+        .lean();
+
+      categoryIds.push(...cats.map((c: any) => c._id));
+    }
+
+    // apply if we found any ids
+    if (categoryIds.length > 0) {
+      query.category = { $in: categoryIds };
+    }
+  }
+
+  // ✅ Sort
+  const sortQuery: any = {};
+  if (sort === "price-asc") sortQuery.price = 1;
+  if (sort === "price-desc") sortQuery.price = -1;
+
+  const courses = await Course.find(query)
     .select([
       "title",
       "subtitle",
@@ -24,29 +132,16 @@ export async function getCourseList(): Promise<any[]> {
       "category",
       "instructor",
     ])
-    .populate({
-      path: "category",
-      model: Category,
-    })
-    .populate({
-      path: "instructor",
-      model: User,
-    })
-    .populate({
-      path: "testimonials",
-      model: Testimonial,
-    })
-    .populate({
-      path: "modules",
-      model: Module,
-    })
+    .populate({ path: "category", model: Category })
+    .populate({ path: "instructor", model: User })
+    .populate({ path: "testimonials", model: Testimonial })
+    .populate({ path: "modules", model: Module })
+    .sort(sortQuery)
     .lean();
 
   return replaceMongoIdInArray(courses);
-}
 
-
-import mongoose from "mongoose";
+  }
 
 export async function getCourseDetails(id: string): Promise<any> {
   // ✅ guard invalid id
